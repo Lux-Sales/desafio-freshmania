@@ -1,12 +1,14 @@
+import os
 from flask import Flask, jsonify, request
 from flask_pymongo import PyMongo
 from bson.objectid import ObjectId
 
 app = Flask(__name__)
 
-app.secret_key = "secretkey"
+app.secret_key = os.getenv('SECRET_KEY')
 
-app.config["MONGO_URI"] = "mongodb+srv://lucas:1234@desafio-freshmania.gcleq.mongodb.net/freshmania?retryWrites=true&w=majority"
+app.config["MONGO_URI"] = os.getenv('ME_CONFIG_MONGODB_URL')
+ 
 
 mongo = PyMongo(app)
 
@@ -20,7 +22,7 @@ def products():
                 id=str(product['_id']),
                 name=product['name'],
                 logo=product['logo'],
-                value=product['value']
+                value=product['value'],
             )
         )
     return dict(products=products)
@@ -101,7 +103,7 @@ def not_found(error=None):
     return resp    
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host='0.0.0.0',debug=True)
     
 @app.errorhandler(400)
 def wrong_data(error=None):
@@ -112,6 +114,3 @@ def wrong_data(error=None):
     resp = jsonify(message)
     resp.status_code = 400
     return resp    
-
-if __name__ == "__main__":
-    app.run(debug=True)

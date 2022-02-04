@@ -25,7 +25,7 @@ div{
         width: 95%;
         border-radius: 15px;
     }
-    #title-input{
+    #name-input{
         margin-left: 3px;
         font-weight: bold;
     }

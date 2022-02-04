@@ -1,11 +1,15 @@
 import React from 'react';
 import Dashboard from './pages/Dashboard';
 import GlobalStyle from './styles/global'
+import GlobalContext from './context';
+
 function App() {
   return (
     <>
-    <Dashboard />
-    <GlobalStyle />
+      <GlobalContext>
+        <Dashboard />
+        <GlobalStyle />
+      </GlobalContext>
     </>
   );
 }

@@ -37,8 +37,9 @@ services:
       - appdata:/var/www
     depends_on:
       - mongodb
-    networks:
-      - backend
+    # networks:
+    #   - backend
+    network_mode: host
 
 
 networks:

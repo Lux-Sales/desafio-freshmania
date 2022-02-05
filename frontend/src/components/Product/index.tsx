@@ -32,7 +32,7 @@ export const Product = (props: ProductContainerProps) => {
                 setGlobalState(DEFAULT_VALUE.state)
             }
             catch (e) {
-                console.log('DEU RUIM', e)
+                Swal.fire('Oops!', 'Ocorreu um erro ao adicionar produto, verifique os campos e tente novamente', 'info')
             }
         }
         else {
@@ -43,15 +43,23 @@ export const Product = (props: ProductContainerProps) => {
     const handleEdit = async () => {
         const confirmation = await confirm('editar')
         if (confirmation) {
+            if (state.name == "" || state.logo == "" || state.value == 0){
+                return Swal.fire('Oops!', 'Preencha todos os campos corretamente!', 'info')
+            }
             const obj = {
                 id: product.id,
-                name: (state.name == DEFAULT_VALUE.state.name) ? product.name : state.name,
-                logo: (state.logo == DEFAULT_VALUE.state.logo) ? product.logo : state.logo,
-                value: (state.value == DEFAULT_VALUE.state.value) ? product.value : state.value
+                name: (state.name == "default") ? product.name : state.name,
+                logo: (state.logo == "default") ? product.logo : state.logo,
+                value: (state.value == 0) ? product.value : state.value
             }
-            await editProduct(obj)
-            setRefresh(true)
-            Swal.fire('Sucesso!', 'Produto editado', 'success')
+            try {
+                await editProduct(obj)
+                setRefresh(true)
+                Swal.fire('Sucesso!', 'Produto editado', 'success')
+            }
+            catch (e) {
+
+            }
         }
         else {
             Swal.fire('Cancelado!', 'Nenhuma alteração foi feita', 'info')
@@ -62,8 +70,7 @@ export const Product = (props: ProductContainerProps) => {
         const confirmation = await confirm('deletar')
         if (confirmation) {
             try {
-                if (product)
-                    await deleteProduct(product)
+                await deleteProduct(product)
                 setRefresh(true)
                 Swal.fire('Sucesso!', 'Produto deletado', 'success')
             }
@@ -97,14 +104,13 @@ export const Product = (props: ProductContainerProps) => {
                                     handleSubmit()
                                 }
                                 else {
-                                    if (product)
-                                        handleEdit()
+                                    handleEdit()
                                 }
                                 setIsSubmit(false)
                             }} sx={{ color: grey[900] }} />
                         </button>
                         <button
-                        onClick={()=>clearInputs(product.id)}
+                            onClick={() => clearInputs(product.id, state, setGlobalState)}
                         >
                             <DoDisturbIcon sx={{ color: grey[900] }} />
                         </button>
@@ -126,7 +132,7 @@ export const Product = (props: ProductContainerProps) => {
                     <input
                         id="value-input"
                         className={product.id}
-                        defaultValue={product.value == 0?"":product.value}
+                        defaultValue={product.value == 0 ? "" : product.value}
                         disabled={!isSubmit && !isUpload}
                         onChange={(e) => setGlobalState({ ...state, value: Number(e.target.value) })}
                     />

@@ -11,9 +11,9 @@ interface PropsProductContext {
 
 export const DEFAULT_VALUE = {
     state: {
-        id:"",
-        name: "",
-        logo: "sabão",
+        id:"default",
+        name: "default",
+        logo: "default",
         value: 0
     },
     setState: () => { },

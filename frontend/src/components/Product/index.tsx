@@ -19,17 +19,23 @@ interface ProductContainerProps {
 export const Product = (props: ProductContainerProps) => {
     const { isUpload, product } = props
     const [isSubmit, setIsSubmit] = useState(false)
+    const [logo, setLogo] = useState<File | undefined>(undefined)
 
     const { state, setState: setGlobalState, setRefresh } = useContext(ProductContext)
+
+    useEffect(()=>{
+        console.log(state)
+    },[state])
 
     const handleSubmit = async () => {
         const confirmation = await confirm('adicionar')
         if (confirmation) {
             try {
-                await addProduct(state)
+                await addProduct(state, logo)
                 Swal.fire('Sucesso!', 'Produto adicionado', 'success')
                 setRefresh(true)
                 setGlobalState(DEFAULT_VALUE.state)
+                setIsSubmit(false)
             }
             catch (e) {
                 Swal.fire('Oops!', 'Ocorreu um erro ao adicionar produto, verifique os campos e tente novamente', 'info')
@@ -43,18 +49,19 @@ export const Product = (props: ProductContainerProps) => {
     const handleEdit = async () => {
         const confirmation = await confirm('editar')
         if (confirmation) {
-            if (state.name == "" || state.logo == "" || state.value == 0){
+            if (state.name == "" || state.value == 0){
                 return Swal.fire('Oops!', 'Preencha todos os campos corretamente!', 'info')
             }
             const obj = {
                 id: product.id,
                 name: (state.name == "default") ? product.name : state.name,
-                logo: (state.logo == "default") ? product.logo : state.logo,
+                logo: (state.logo == "") ? product.logo : state.logo,
                 value: (state.value == 0) ? product.value : state.value
             }
             try {
                 await editProduct(obj)
                 setRefresh(true)
+                setIsSubmit(false)
                 Swal.fire('Sucesso!', 'Produto editado', 'success')
             }
             catch (e) {
@@ -82,6 +89,21 @@ export const Product = (props: ProductContainerProps) => {
             Swal.fire('Cancelado!', 'Nenhuma alteração foi feita', 'info')
         }
     }
+
+    function handleShowImage(){
+        if (isUpload && state.logo == ""){
+            return NoImage
+        }
+        else if (isUpload && state.logo != ""){
+            return state.logo
+        }
+        else if (!isUpload){
+            return product.logo
+        }
+        else {
+            return NoImage
+        }
+    }
     return (
         <Container>
             <LateralButtons>
@@ -106,7 +128,6 @@ export const Product = (props: ProductContainerProps) => {
                                 else {
                                     handleEdit()
                                 }
-                                setIsSubmit(false)
                             }} sx={{ color: grey[900] }} />
                         </button>
                         <button
@@ -119,7 +140,15 @@ export const Product = (props: ProductContainerProps) => {
             </LateralButtons>
             <CardBody>
                 <button>
-                    <img src={isUpload ? NoImage : Leite} alt="logo" />
+                    <input type="file" 
+                    onChange={(e)=> {
+                        if (e.target.files && e.target.files[0]){
+                            setGlobalState({...state, logo: URL.createObjectURL(e.target.files[0])})
+                            setLogo(e.target.files[0])
+                        }
+                    }}
+                    />
+                    <img src={handleShowImage()} alt="logo" />
                 </button>
                 <div>
                     <input

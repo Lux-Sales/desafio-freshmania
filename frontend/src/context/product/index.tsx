@@ -13,10 +13,10 @@ export const DEFAULT_VALUE = {
     state: {
         id:"default",
         name: "default",
-        logo: "default",
+        logo: "",
         value: 0
     },
-    setState: () => { },
+    setState: () => {},
     refresh: false,
     setRefresh: () => {}
 }

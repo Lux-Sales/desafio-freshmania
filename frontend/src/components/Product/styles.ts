@@ -9,12 +9,23 @@ height: 15em;
 
 export const CardBody = styled.div`
 button{
+    position: relative;
     width: 90%;
     height: 7em;
     margin-bottom: 12px;
-    img{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    input{
+        cursor: pointer;
+        opacity: 0;
+        position: absolute;
         height: 100%;
-        width: 2em;
+        width: 100%;
+    }
+    img{
+        max-height: 100%;
+        max-width: 100%;
     }
 }
 div{

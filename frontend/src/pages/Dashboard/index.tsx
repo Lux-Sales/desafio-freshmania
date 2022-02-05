@@ -25,7 +25,12 @@ const Dashboard: React.FC = () => {
       <Container>
         <Header />
         <Product
-        product={undefined}
+        product={{
+          id:"uploading",
+          name:"",
+          logo:"",
+          value:0
+        }}
         isUpload={true} />
         <ProductsDiv>
           {products && products.map((product) => {

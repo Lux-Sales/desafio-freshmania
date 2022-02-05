@@ -9,11 +9,11 @@ import CheckIcon from '@mui/icons-material/Check';
 import DoDisturbIcon from '@mui/icons-material/DoDisturb';
 import { addProduct, deleteProduct, editProduct, ProductInterface } from '../../services/products';
 import ProductContext, { DEFAULT_VALUE } from '../../context/product'
-import { confirm } from '../../utils/confirmation'
+import { confirm, clearInputs } from '../../utils/utils'
 import Swal from 'sweetalert2'
 interface ProductContainerProps {
     isUpload: boolean;
-    product: ProductInterface | undefined
+    product: ProductInterface
 }
 
 export const Product = (props: ProductContainerProps) => {
@@ -44,10 +44,10 @@ export const Product = (props: ProductContainerProps) => {
         const confirmation = await confirm('editar')
         if (confirmation) {
             const obj = {
-                id: product ? product?.id : "",
-                name: (state.name == DEFAULT_VALUE.state.name && product) ? product.name : state.name,
-                logo: (state.logo == DEFAULT_VALUE.state.logo && product) ? product.logo : state.logo,
-                value: (state.value == DEFAULT_VALUE.state.value && product) ? product.value : state.value
+                id: product.id,
+                name: (state.name == DEFAULT_VALUE.state.name) ? product.name : state.name,
+                logo: (state.logo == DEFAULT_VALUE.state.logo) ? product.logo : state.logo,
+                value: (state.value == DEFAULT_VALUE.state.value) ? product.value : state.value
             }
             await editProduct(obj)
             setRefresh(true)
@@ -103,7 +103,9 @@ export const Product = (props: ProductContainerProps) => {
                                 setIsSubmit(false)
                             }} sx={{ color: grey[900] }} />
                         </button>
-                        <button>
+                        <button
+                        onClick={()=>clearInputs(product.id)}
+                        >
                             <DoDisturbIcon sx={{ color: grey[900] }} />
                         </button>
                     </>
@@ -116,13 +118,15 @@ export const Product = (props: ProductContainerProps) => {
                 <div>
                     <input
                         id="name-input"
-                        defaultValue={isUpload ? "" : product?.name}
+                        className={product.id}
+                        defaultValue={product.name}
                         disabled={!isSubmit && !isUpload}
                         onChange={(e) => setGlobalState({ ...state, name: e.target.value })}
                     />
                     <input
                         id="value-input"
-                        defaultValue={isUpload ? "" : product?.value}
+                        className={product.id}
+                        defaultValue={product.value == 0?"":product.value}
                         disabled={!isSubmit && !isUpload}
                         onChange={(e) => setGlobalState({ ...state, value: Number(e.target.value) })}
                     />

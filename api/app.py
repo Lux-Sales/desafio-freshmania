@@ -76,15 +76,22 @@ class ProductCRUD():
     @app.route('/product/update/<id>', methods=['PUT'])
     def update_product(id):
         _id = id
-        json = request.json
-        name = json['name']
-        logo = json['logo']
-        value = json['value']
-        if name and logo and value and request.method == 'PUT':
+        name = request.form['name']
+        try:
+            logo = request.files['logo']
+        except Exception as e:
+            logo = None
+        value = request.form['value']
+        if name and value and request.method == 'PUT':
+            old_logo = mongo.db.Product.find_one({'_id':ObjectId(_id['$oid'])if '$oid' in _id else ObjectId(_id)})['logo']
+            if logo:
+                s3_url = upload_file_to_s3(logo)
+                splited_old_logo = old_logo.split('/')
+                s3.delete_object(Bucket=app.config['S3_BUCKET'], Key=splited_old_logo[len(splited_old_logo)])
             mongo.db.Product.update_one({'_id':ObjectId(_id['$oid'])if '$oid' in _id else ObjectId(_id)},
             {'$set':{
                 'name':name,
-                'logo':logo,
+                'logo':s3_url if logo else old_logo,
                 'value':value
             }}).raw_result
             product_updated = mongo.db.Product.find_one({'_id':ObjectId(_id['$oid'])if '$oid' in _id else ObjectId(_id)})
@@ -112,7 +119,7 @@ class ProductCRUD():
         )
         mongo.db.Product.delete_one({'_id':ObjectId(id)})
         url = product['logo'].split('/')
-        s3.delete_object(Bucket=app.config['S3_BUCKET'], Key=url[3])
+        s3.delete_object(Bucket=app.config['S3_BUCKET'], Key=url[len(url)])
         resp = jsonify({"message":"Product deleted!", "product":product })
         resp.status_code = 200
         return resp

@@ -10,6 +10,7 @@ import { addProduct, deleteProduct, editProduct, ProductInterface } from '../../
 import ProductContext from '../../context/product'
 import { confirm, clearInputs } from '../../utils/utils'
 import Swal from 'sweetalert2'
+import { Satellite } from '@mui/icons-material';
 interface ProductContainerProps {
     isUpload: boolean;
     product: ProductInterface
@@ -87,21 +88,21 @@ export const Product = (props: ProductContainerProps) => {
     }
 
     function handleShowImage() {
-        if (isUpload && state.logo == "") {
+        //initial state for upload component
+        if (isUpload && logo == undefined){
             return UploadPhoto
         }
-        else if (isUpload && state.logo != "" && product.name != "") {
-            console.log(product.name)
+        //image addeded to upload
+        else if (isUpload && logo != undefined && product.id=="uploading"){
             return state.logo
         }
-        else if (!isUpload && state.logo == "") {
+        //initial state for product
+        else if (!isUpload && logo == undefined){
             return product.logo
         }
-        else if (!isUpload && state.logo != ""){
+        // image addeded to product
+        else if (!isUpload && logo != undefined){
             return state.logo
-        }
-        else {
-            return UploadPhoto
         }
     }
     return (

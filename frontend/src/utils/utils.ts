@@ -20,9 +20,7 @@ export const confirm = async (action: string) => {
 
 export const clearInputs = (id: string | undefined, state: ProductInterface, setGlobalState: React.Dispatch<React.SetStateAction<ProductInterface>>) => {
     var elements = document.getElementsByTagName('input');
-    console.log(elements[0].className)
     for (let i = 0; i < elements.length; i++) {
-        console.log(elements[i])
         if (elements[i].className == id)
             elements[i].value = ""
     }

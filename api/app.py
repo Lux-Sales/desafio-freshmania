@@ -4,6 +4,7 @@ from flask_pymongo import PyMongo
 from bson.objectid import ObjectId
 from flask_cors import CORS
 import boto3
+from datetime import datetime
 
 app = Flask(__name__)
 CORS(app)
@@ -49,6 +50,8 @@ class ProductCRUD():
 
         if logo and name and value and request.method == 'POST':
             try:
+                now = str(datetime.now())
+                logo.filename = now
                 s3_url = upload_file_to_s3(logo)
                 db_response = mongo.db.Product.insert_one({'name':name,'logo':s3_url,'value':value})
                 product_adedded = mongo.db.Product.find_one({'_id':db_response.inserted_id})
@@ -85,6 +88,8 @@ class ProductCRUD():
         if name and value and request.method == 'PUT':
             old_logo = mongo.db.Product.find_one({'_id':ObjectId(_id['$oid'])if '$oid' in _id else ObjectId(_id)})['logo']
             if logo:
+                now = str(datetime.now())
+                logo.filename = now
                 s3_url = upload_file_to_s3(logo)
                 splited_old_logo = old_logo.split('/')
                 s3.delete_object(Bucket=app.config['S3_BUCKET'], Key=splited_old_logo[len(splited_old_logo)-1])

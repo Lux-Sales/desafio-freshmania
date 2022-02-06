@@ -41,7 +41,6 @@ services:
     depends_on:
       - mongodb
     # networks:
-    #   - backend
     network_mode: host
 
 

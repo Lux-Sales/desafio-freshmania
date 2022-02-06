@@ -111,6 +111,8 @@ class ProductCRUD():
             value=product_to_be_deleted['value']
         )
         mongo.db.Product.delete_one({'_id':ObjectId(id)})
+        url = product['logo'].split('/')
+        s3.delete_object(Bucket=app.config['S3_BUCKET'], Key=url[3])
         resp = jsonify({"message":"Product deleted!", "product":product })
         resp.status_code = 200
         return resp

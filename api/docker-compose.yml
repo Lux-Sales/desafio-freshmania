@@ -18,7 +18,7 @@ services:
 
   flask:
     build:
-      context: /home/lucas/desafio-freshmania/api
+      context: ./
       dockerfile: Dockerfile
     container_name: flask
     image: digitalocean.com/flask-python:3.6

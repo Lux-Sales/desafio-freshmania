@@ -33,6 +33,9 @@ services:
       SECRET_KEY: secretkey
       ME_CONFIG_MONGODB_URL: mongodb+srv://lucas:1234@desafio-freshmania.gcleq.mongodb.net/freshmania?retryWrites=true&w=majority
       MONGODB_HOSTNAME: mongodb
+      S3_BUCKET_NAME: desafio-freshmania
+      AWS_ACCESS_KEY: AKIAXDQ532KZVIRHT6P2
+      AWS_ACCESS_SECRET: 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
     volumes:
       - appdata:/var/www
     depends_on:

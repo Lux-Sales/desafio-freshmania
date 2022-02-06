@@ -3,14 +3,24 @@ from flask import Flask, jsonify, request
 from flask_pymongo import PyMongo
 from bson.objectid import ObjectId
 from flask_cors import CORS
+import boto3
 
 app = Flask(__name__)
 CORS(app)
 
 app.secret_key = os.getenv('SECRET_KEY')
 
+app.config['S3_BUCKET'] = os.getenv('S3_BUCKET_NAME')
+app.config['S3_KEY'] = os.getenv("AWS_ACCESS_KEY")
+app.config['S3_SECRET'] = os.getenv("AWS_ACCESS_SECRET")
+app.config['S3_LOCATION'] = 'http://{}.s3.amazonaws.com/'.format(app.config['S3_BUCKET'])
 app.config["MONGO_URI"] = os.getenv('ME_CONFIG_MONGODB_URL')
  
+s3 = boto3.client(
+   "s3",
+   aws_access_key_id=app.config['S3_KEY'],
+   aws_secret_access_key=app.config['S3_SECRET']
+)
 
 mongo = PyMongo(app)
 
@@ -33,23 +43,33 @@ class ProductCRUD():
 
     @app.route('/add', methods=['POST'])
     def add_product():
-        json = request.json
-        logo = json['logo']
-        name = json['name']
-        value = json['value']
+        name = request.form['name']
+        logo = request.files['logo']
+        value = request.form['value']
 
         if logo and name and value and request.method == 'POST':
-            db_response = mongo.db.Product.insert_one({'name':name,'logo':logo,'value':value})
-            product_adedded = mongo.db.Product.find_one({'_id':db_response.inserted_id})
-            product = dict(
-                id=str(product_adedded['_id']),
-                name=product_adedded['name'],
-                logo=product_adedded['logo'],
-                value=product_adedded['value']
-            )
-            resp = jsonify({"message":"Product added!", "product":product })
-            resp.status_code = 200
-            return resp
+            try:
+                s3_url = upload_file_to_s3(logo)
+                db_response = mongo.db.Product.insert_one({'name':name,'logo':s3_url,'value':value})
+                product_adedded = mongo.db.Product.find_one({'_id':db_response.inserted_id})
+                product = dict(
+                    id=str(product_adedded['_id']),
+                    name=product_adedded['name'],
+                    logo=s3_url,
+                    value=product_adedded['value']
+                )
+                resp = jsonify({"message":"Product added!", 'product':product})
+                resp.status_code = 200
+                return resp
+            except Exception as err:
+                resp = jsonify(
+                    {
+                        "message":"Something went wrong!",
+                        "exception":err        
+                    }
+                )
+                resp.status_code = 500
+                return resp
         else:
             return ErrorHandler.wrong_data()
 
@@ -120,3 +140,20 @@ class ErrorHandler():
     
 if __name__ == "app":
     app.run(host='0.0.0.0',debug=True)
+
+
+def upload_file_to_s3(file, acl="public-read"):
+    try:
+        s3.upload_fileobj(
+            file,
+            app.config['S3_BUCKET'],
+            file.filename,
+            ExtraArgs={
+                "ACL": acl,
+                "ContentType": file.content_type    #Set appropriate content type as per the file
+            }
+        )
+    except Exception as e:
+        print("Something Happened: ", e)
+        return e
+    return "{}{}".format(app.config["S3_LOCATION"], file.filename)

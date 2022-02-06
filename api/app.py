@@ -87,7 +87,7 @@ class ProductCRUD():
             if logo:
                 s3_url = upload_file_to_s3(logo)
                 splited_old_logo = old_logo.split('/')
-                s3.delete_object(Bucket=app.config['S3_BUCKET'], Key=splited_old_logo[len(splited_old_logo)])
+                s3.delete_object(Bucket=app.config['S3_BUCKET'], Key=splited_old_logo[len(splited_old_logo)-1])
             mongo.db.Product.update_one({'_id':ObjectId(_id['$oid'])if '$oid' in _id else ObjectId(_id)},
             {'$set':{
                 'name':name,
@@ -119,7 +119,7 @@ class ProductCRUD():
         )
         mongo.db.Product.delete_one({'_id':ObjectId(id)})
         url = product['logo'].split('/')
-        s3.delete_object(Bucket=app.config['S3_BUCKET'], Key=url[len(url)])
+        s3.delete_object(Bucket=app.config['S3_BUCKET'], Key=url[len(url)-1])
         resp = jsonify({"message":"Product deleted!", "product":product })
         resp.status_code = 200
         return resp

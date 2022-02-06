@@ -10,7 +10,6 @@ import { addProduct, deleteProduct, editProduct, ProductInterface } from '../../
 import ProductContext from '../../context/product'
 import { confirm, clearInputs } from '../../utils/utils'
 import Swal from 'sweetalert2'
-import { Satellite } from '@mui/icons-material';
 interface ProductContainerProps {
     isUpload: boolean;
     product: ProductInterface
@@ -76,6 +75,7 @@ export const Product = (props: ProductContainerProps) => {
             try {
                 await deleteProduct(product)
                 setRefresh(true)
+                window.location.reload()
                 Swal.fire('Sucesso!', 'Produto deletado', 'success')
             }
             catch (e) {

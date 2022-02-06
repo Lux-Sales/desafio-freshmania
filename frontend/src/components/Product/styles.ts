@@ -9,6 +9,8 @@ height: 15em;
 
 export const CardBody = styled.div`
 button{
+    background-color: transparent;
+    border: none;
     position: relative;
     width: 90%;
     height: 7em;
@@ -40,9 +42,13 @@ div{
         margin-left: 3px;
         font-weight: bold;
     }
+    div{
+        display:flex;
+        flex-direction: row;
+        margin: 7px 5px 0 auto;
+    }
     #value-input{
         width: 4em;
-        margin: 5px 5px 0 auto
     }
 }
 position: absolute;

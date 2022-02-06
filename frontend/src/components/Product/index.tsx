@@ -1,14 +1,13 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { Container, CardBody, LateralButtons } from './styles'
-import Leite from '../../leite.jpg'
-import NoImage from '../../no-image.png'
+import UploadPhoto from '../../assets/upload-photo.jpg'
 import CreateIcon from '@mui/icons-material/Create';
 import { grey } from '@mui/material/colors';
 import ClearIcon from '@mui/icons-material/Clear';
 import CheckIcon from '@mui/icons-material/Check';
 import DoDisturbIcon from '@mui/icons-material/DoDisturb';
 import { addProduct, deleteProduct, editProduct, ProductInterface } from '../../services/products';
-import ProductContext, { DEFAULT_VALUE } from '../../context/product'
+import ProductContext from '../../context/product'
 import { confirm, clearInputs } from '../../utils/utils'
 import Swal from 'sweetalert2'
 interface ProductContainerProps {
@@ -23,10 +22,6 @@ export const Product = (props: ProductContainerProps) => {
 
     const { state, setState: setGlobalState, setRefresh } = useContext(ProductContext)
 
-    useEffect(()=>{
-        console.log(state)
-    },[state])
-
     const handleSubmit = async () => {
         const confirmation = await confirm('adicionar')
         if (confirmation) {
@@ -34,7 +29,8 @@ export const Product = (props: ProductContainerProps) => {
                 await addProduct(state, logo)
                 Swal.fire('Sucesso!', 'Produto adicionado', 'success')
                 setRefresh(true)
-                setGlobalState(DEFAULT_VALUE.state)
+                clearInputs(product.id, state, setGlobalState)
+                handleShowImage()
                 setIsSubmit(false)
             }
             catch (e) {
@@ -49,23 +45,23 @@ export const Product = (props: ProductContainerProps) => {
     const handleEdit = async () => {
         const confirmation = await confirm('editar')
         if (confirmation) {
-            if (state.name == "" || state.value == 0){
+            if (product.name == "default" || product.value == 0) {
                 return Swal.fire('Oops!', 'Preencha todos os campos corretamente!', 'info')
             }
             const obj = {
+                ...state,
                 id: product.id,
                 name: (state.name == "default") ? product.name : state.name,
-                logo: (state.logo == "") ? product.logo : state.logo,
                 value: (state.value == 0) ? product.value : state.value
             }
             try {
-                await editProduct(obj)
+                await editProduct(obj,logo)
                 setRefresh(true)
                 setIsSubmit(false)
                 Swal.fire('Sucesso!', 'Produto editado', 'success')
             }
             catch (e) {
-
+                Swal.fire('Oops!', 'Ocorreu um erro ao editar produto, verifique os campos e tente novamente', 'info')
             }
         }
         else {
@@ -82,7 +78,7 @@ export const Product = (props: ProductContainerProps) => {
                 Swal.fire('Sucesso!', 'Produto deletado', 'success')
             }
             catch (e) {
-                console.log(e)
+                Swal.fire('Oops!', 'Ocorreu um erro ao deletar produto!', 'info')
             }
         }
         else {
@@ -90,18 +86,22 @@ export const Product = (props: ProductContainerProps) => {
         }
     }
 
-    function handleShowImage(){
-        if (isUpload && state.logo == ""){
-            return NoImage
+    function handleShowImage() {
+        if (isUpload && state.logo == "") {
+            return UploadPhoto
         }
-        else if (isUpload && state.logo != ""){
+        else if (isUpload && state.logo != "" && product.name != "") {
+            console.log(product.name)
             return state.logo
         }
-        else if (!isUpload){
+        else if (!isUpload && state.logo == "") {
             return product.logo
         }
+        else if (!isUpload && state.logo != ""){
+            return state.logo
+        }
         else {
-            return NoImage
+            return UploadPhoto
         }
     }
     return (
@@ -131,7 +131,9 @@ export const Product = (props: ProductContainerProps) => {
                             }} sx={{ color: grey[900] }} />
                         </button>
                         <button
-                            onClick={() => clearInputs(product.id, state, setGlobalState)}
+                            onClick={() =>
+                                clearInputs(product.id, state, setGlobalState)
+                            }
                         >
                             <DoDisturbIcon sx={{ color: grey[900] }} />
                         </button>
@@ -140,31 +142,38 @@ export const Product = (props: ProductContainerProps) => {
             </LateralButtons>
             <CardBody>
                 <button>
-                    <input type="file" 
-                    onChange={(e)=> {
-                        if (e.target.files && e.target.files[0]){
-                            setGlobalState({...state, logo: URL.createObjectURL(e.target.files[0])})
-                            setLogo(e.target.files[0])
-                        }
-                    }}
+                    <input type="file"
+                        className={product.id}
+                        disabled={!isSubmit && !isUpload}
+                        onChange={(e) => {
+                            if (e.target.files && e.target.files[0]) {
+                                setGlobalState({ ...state, logo: URL.createObjectURL(e.target.files[0]) })
+                                setLogo(e.target.files[0])
+                            }
+                        }}
                     />
-                    <img src={handleShowImage()} alt="logo" />
+                    <img id="img-field" src={handleShowImage()} alt="logo" />
                 </button>
                 <div>
                     <input
                         id="name-input"
                         className={product.id}
                         defaultValue={product.name}
+                        placeholder={isUpload ? "Nome do produto" : ""}
                         disabled={!isSubmit && !isUpload}
                         onChange={(e) => setGlobalState({ ...state, name: e.target.value })}
                     />
-                    <input
-                        id="value-input"
-                        className={product.id}
-                        defaultValue={product.value == 0 ? "" : product.value}
-                        disabled={!isSubmit && !isUpload}
-                        onChange={(e) => setGlobalState({ ...state, value: Number(e.target.value) })}
-                    />
+                    <div>
+                        <label htmlFor="value-input">R$</label>
+                        <input
+                            id="value-input"
+                            className={product.id}
+                            defaultValue={product.value == 0 ? "" : product.value}
+                            placeholder={isUpload ? "Valor" : " "}
+                            disabled={!isSubmit && !isUpload}
+                            onChange={(e) => setGlobalState({ ...state, value: Number(e.target.value) })}
+                        />
+                    </div>
                 </div>
             </CardBody>
         </Container>
